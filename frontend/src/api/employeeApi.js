@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = "/api/v1";
 
 export async function getEmployees() {
   const response = await fetch(`${API_URL}/employees`);
@@ -20,7 +20,9 @@ export async function createEmployee(employee) {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to create employee");
+    const error = await response.text();
+    console.error(error);
+    throw new Error(error);
   }
 
   return response.json();
