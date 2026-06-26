@@ -1,29 +1,75 @@
-# Environment
+# =========================
+# Environment Variables
+# =========================
 .env
 .env.*
-
 !.env.example
 
+# =========================
 # Python
+# =========================
 venv/
+.venv/
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
 .pytest_cache/
+.mypy_cache/
 
-# Node
-node_modules/
-dist/
-
-# Docker
+# =========================
+# FastAPI
+# =========================
 *.log
 
-# AWS installers
-aws/
-awscliv2.zip
+# =========================
+# Node / React / Vite
+# =========================
+node_modules/
+dist/
+.vite/
 
+# =========================
+# Docker
+# =========================
+docker-data/
+*.pid
+
+# =========================
 # IDE
+# =========================
 .vscode/
 .idea/
 
+# =========================
 # OS
+# =========================
 .DS_Store
+Thumbs.db
+
+# =========================
+# AWS Downloads
+# =========================
+aws/
+awscliv2.zip
+
+# =========================
+# SSH Keys
+# =========================
+*.pem
+*.key
+.github_actions
+github_actions
+github_actions.pub
+
+# =========================
+# Certbot
+# =========================
+fullchain.pem
+privkey.pem
+
+# =========================
+# Terraform (future)
+# =========================
+.terraform/
+*.tfstate
+*.tfstate.*
