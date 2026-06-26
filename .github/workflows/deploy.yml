@@ -28,6 +28,16 @@ jobs:
           script: |
             cd /apps/employee-management
 
+            ./scripts/backup.sh
+
+            ./scripts/tag-images.sh
+
             git pull origin main
 
             docker compose up -d --build
+
+            docker image prune -f
+
+            
+
+            
