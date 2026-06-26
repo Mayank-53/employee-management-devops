@@ -1,16 +1,29 @@
-venv/
-node_modules/
-
+# Environment
 .env
+.env.*
 
+!.env.example
+
+# Python
+venv/
 __pycache__/
 *.pyc
-
-dist/
-build/
-
 .pytest_cache/
 
-.vscode/
+# Node
+node_modules/
+dist/
 
+# Docker
+*.log
+
+# AWS installers
+aws/
+awscliv2.zip
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store

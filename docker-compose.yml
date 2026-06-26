@@ -1,0 +1,58 @@
+services:
+
+  db:
+    image: postgres:17
+    container_name: employee_db
+
+    restart: always
+
+    env_file:
+      - .env
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: employee_backend
+
+    restart: always
+
+    env_file:
+      - .env
+
+    depends_on:
+      - db
+
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: employee_frontend
+
+    restart: always
+
+    env_file:
+      - .env
+
+    depends_on:
+      - backend
+
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:
