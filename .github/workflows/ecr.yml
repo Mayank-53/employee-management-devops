@@ -1,0 +1,77 @@
+name: Build and Push Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  build-and-push:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Backend Image
+        run: |
+          docker build \
+          -t employee-management-backend:${{ github.sha }} \
+          -t employee-management-backend:latest \
+          ./backend
+
+      - name: Tag Backend Image
+        run: |
+          docker tag \
+          employee-management-backend:${{ github.sha }} \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-backend:${{ github.sha }}
+
+          docker tag \
+          employee-management-backend:latest \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-backend:latest
+
+      - name: Push Backend Image
+        run: |
+          docker push \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-backend:${{ github.sha }}
+
+          docker push \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-backend:latest
+
+      - name: Build Frontend Image
+        run: |
+          docker build \
+          -t employee-management-frontend:${{ github.sha }} \
+          -t employee-management-frontend:latest \
+          ./frontend
+
+      - name: Tag Frontend Image
+        run: |
+          docker tag \
+          employee-management-frontend:${{ github.sha }} \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-frontend:${{ github.sha }}
+
+          docker tag \
+          employee-management-frontend:latest \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-frontend:latest
+
+      - name: Push Frontend Image
+        run: |
+          docker push \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-frontend:${{ github.sha }}
+
+          docker push \
+          104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-frontend:latest
