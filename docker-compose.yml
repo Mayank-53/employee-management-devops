@@ -21,8 +21,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build:
-      context: ./backend
+    image: 104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-backend:latest
+
+      
 
     container_name: employee_backend
 
@@ -38,8 +39,9 @@ services:
       - "8000:8000"
 
   frontend:
-    build:
-      context: ./frontend
+    image: 104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management-frontend:latest
+
+      
 
     container_name: employee_frontend
 
