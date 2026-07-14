@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: employee-config
+  namespace: {{ .Values.namespace }}
+
+data:
+  APP_NAME: "Employee Management API"
+  API_V1_PREFIX: "/api/v1"
+
+  POSTGRES_SERVER: "employee-postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "employee_db"
+
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"

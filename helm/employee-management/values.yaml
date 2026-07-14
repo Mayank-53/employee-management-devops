@@ -1,0 +1,76 @@
+namespace: employee-management
+
+global:
+  imagePullSecrets: []
+
+backend:
+  replicaCount: 2
+
+  image:
+    repository: employee-management-devops-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  service:
+    port: 8000
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+frontend:
+  replicaCount: 2
+
+  image:
+    repository: employee-management-devops-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  service:
+    port: 80
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+
+    limits:
+      cpu: "300m"
+      memory: "256Mi"
+
+postgres:
+  replicaCount: 1
+
+  image:
+    repository: postgres
+    tag: "17"
+    pullPolicy: IfNotPresent
+
+  service:
+    port: 5432
+
+  storage: 2Gi
+
+ingress:
+  enabled: true
+
+  className: nginx
+
+  host: employee.local
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  cpuUtilization: 30
+
+pdb:
+  minAvailable: 1
+
+migration:
+  ttlSecondsAfterFinished: 300

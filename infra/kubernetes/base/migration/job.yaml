@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: employee-db-migration
+  namespace: employee-management
+
+spec:
+  backoffLimit: 3
+
+  template:
+
+    spec:
+
+      restartPolicy: Never
+
+      containers:
+
+      - name: migration
+
+        image: employee-management-devops-backend:latest
+
+        imagePullPolicy: Never
+
+        command:
+          - alembic
+          - upgrade
+          - head
+
+        envFrom:
+
+        - configMapRef:
+            name: employee-config
+
+        - secretRef:
+            name: employee-secret

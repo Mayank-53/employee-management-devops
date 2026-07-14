@@ -6,7 +6,6 @@ from app.database.connection import engine
 
 import app.models
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.APP_NAME

@@ -1,3 +1,44 @@
+
+# =========================
+# Alembic
+# =========================
+backend/alembic/__pycache__/
+
+# =========================
+# Helm
+# =========================
+*.tgz
+
+# =========================
+# Terraform
+# =========================
+terraform/.terraform/
+terraform/**/*.tfstate
+terraform/**/*.tfstate.*
+terraform/**/*.tfplan
+terraform/**/*.tfvars
+terraform/**/*.tfvars.json
+terraform/.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# =========================
+# Coverage
+# =========================
+.coverage
+coverage.xml
+htmlcov/
+
+# =========================
+# Misc
+# =========================
+*.swp
+
+
+
 # =========================
 # Environment Variables
 # =========================
