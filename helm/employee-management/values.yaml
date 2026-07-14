@@ -7,7 +7,7 @@ backend:
   replicaCount: 2
 
   image:
-    repository: employee-management-devops-backend
+    repository: 104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management/dev/backend
     tag: latest
     pullPolicy: IfNotPresent
 
@@ -27,7 +27,7 @@ frontend:
   replicaCount: 2
 
   image:
-    repository: employee-management-devops-frontend
+    repository: 104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management/dev/frontend
     tag: latest
     pullPolicy: IfNotPresent
 

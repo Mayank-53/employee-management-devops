@@ -5,33 +5,55 @@ metadata:
   name: employee-ingress
   namespace: {{ .Values.namespace }}
 
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+
 spec:
-  ingressClassName: nginx
+  ingressClassName: alb
 
   rules:
-  - host: {{ .Values.ingress.host }}
-
-    http:
-
+  - http:
       paths:
 
-      - path: /
-        pathType: Prefix
-
-        backend:
-          service:
-            name: employee-frontend-service
-
-            port:
-              number: 80
-
       - path: /api
-
         pathType: Prefix
-
         backend:
           service:
             name: employee-backend-service
-
             port:
               number: 8000
+
+      - path: /docs
+        pathType: Prefix
+        backend:
+          service:
+            name: employee-backend-service
+            port:
+              number: 8000
+
+      - path: /openapi.json
+        pathType: Prefix
+        backend:
+          service:
+            name: employee-backend-service
+            port:
+              number: 8000
+
+      - path: /redoc
+        pathType: Prefix
+        backend:
+          service:
+            name: employee-backend-service
+            port:
+              number: 8000
+
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: employee-frontend-service
+            port:
+              number: 80

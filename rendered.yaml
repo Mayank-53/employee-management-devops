@@ -1,0 +1,448 @@
+---
+# Source: employee-management/templates/backend-pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+
+metadata:
+  name: employee-backend-pdb
+  namespace: employee-management
+
+spec:
+  minAvailable: 1
+
+  selector:
+    matchLabels:
+      app: employee-backend
+
+---
+# Source: employee-management/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: employee-secret
+  namespace: employee-management
+
+type: Opaque
+
+stringData:
+  POSTGRES_USER: employee_user
+  POSTGRES_PASSWORD: employee_password
+  SECRET_KEY: change_this_later
+
+---
+# Source: employee-management/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: employee-config
+  namespace: employee-management
+
+data:
+  APP_NAME: "Employee Management API"
+  API_V1_PREFIX: "/api/v1"
+
+  POSTGRES_SERVER: "employee-postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "employee_db"
+
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+
+---
+# Source: employee-management/templates/postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: postgres-pvc
+  namespace: employee-management
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# Source: employee-management/templates/backend-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: employee-backend-service
+  namespace: employee-management
+
+spec:
+  selector:
+    app: employee-backend
+
+  ports:
+  - port: 8000
+    targetPort: 8000
+
+  type: ClusterIP
+
+---
+# Source: employee-management/templates/frontend-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: employee-frontend-service
+  namespace: employee-management
+
+spec:
+  selector:
+    app: employee-frontend
+
+  ports:
+  - port: 80
+    targetPort: 80
+
+  type: ClusterIP
+
+---
+# Source: employee-management/templates/postgres-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: employee-postgres-service
+  namespace: employee-management
+
+spec:
+  selector:
+    app: postgres
+
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+  type: ClusterIP
+
+---
+# Source: employee-management/templates/backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: employee-backend
+  namespace: employee-management
+
+  labels:
+    app: employee-backend
+
+spec:
+  replicas: 2
+
+  strategy:
+    type: RollingUpdate
+
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: employee-backend
+
+  template:
+    metadata:
+      labels:
+        app: employee-backend
+
+    spec:
+      containers:
+        - name: backend
+
+          image: "104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management/dev/backend:latest"
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8000
+
+          envFrom:
+            - configMapRef:
+                name: employee-config
+
+            - secretRef:
+                name: employee-secret
+
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+
+            failureThreshold: 30
+            periodSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+
+---
+# Source: employee-management/templates/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: employee-frontend
+  namespace: employee-management
+  labels:
+    app: employee-frontend
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: employee-frontend
+
+  template:
+    metadata:
+      labels:
+        app: employee-frontend
+
+    spec:
+      containers:
+      - name: frontend
+
+        image: "104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management/dev/frontend:latest"
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 80
+
+        resources:
+          limits:
+            cpu: 300m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+
+          initialDelaySeconds: 20
+          periodSeconds: 10
+
+---
+# Source: employee-management/templates/postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: postgres
+  namespace: employee-management
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: postgres
+
+  template:
+    metadata:
+      labels:
+        app: postgres
+
+    spec:
+      containers:
+
+        - name: postgres
+
+          image: "postgres:17"
+
+          ports:
+            - containerPort: 5432
+
+          env:
+
+            - name: POSTGRES_DB
+              value: employee_db
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: employee-secret
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: employee-secret
+                  key: POSTGRES_PASSWORD
+
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+
+      volumes:
+        - name: postgres-storage
+
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+# Source: employee-management/templates/backend-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+
+metadata:
+  name: employee-backend-hpa
+  namespace: employee-management
+
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: employee-backend
+
+  minReplicas: 2
+  maxReplicas: 6
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+
+      policies:
+        - type: Percent
+          value: 60
+          periodSeconds: 30
+
+    scaleDown:
+      stabilizationWindowSeconds: 60
+
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+
+  metrics:
+    - type: Resource
+
+      resource:
+        name: cpu
+
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+---
+# Source: employee-management/templates/migration-job.yaml
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: employee-db-migration
+  namespace: employee-management
+
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+
+  template:
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: migration
+
+          image: "104875667953.dkr.ecr.eu-north-1.amazonaws.com/employee-management/dev/backend:latest"
+          imagePullPolicy: Never
+
+          command:
+            - alembic
+            - upgrade
+            - head
+
+          envFrom:
+            - configMapRef:
+                name: employee-config
+
+            - secretRef:
+                name: employee-secret
+
+---
+# Source: employee-management/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: employee-ingress
+  namespace: employee-management
+
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+
+spec:
+  ingressClassName: alb
+
+  rules:
+    - http:
+
+        paths:
+
+          - path: /
+            pathType: Prefix
+
+            backend:
+              service:
+                name: employee-frontend-service
+
+                port:
+                  number: 80
+
+          - path: /api
+            pathType: Prefix
+
+            backend:
+              service:
+                name: employee-backend-service
+
+                port:
+                  number: 8000

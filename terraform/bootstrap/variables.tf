@@ -1,0 +1,17 @@
+variable "aws_region" {
+
+  default = "eu-north-1"
+
+}
+
+variable "project_name" {
+
+  default = "employee-management"
+
+}
+
+variable "environment" {
+
+  default = "dev"
+
+}

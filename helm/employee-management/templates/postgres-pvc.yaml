@@ -6,6 +6,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 
 spec:
+  storageClassName: gp2
+
   accessModes:
     - ReadWriteOnce
 
